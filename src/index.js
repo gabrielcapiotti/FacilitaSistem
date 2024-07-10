@@ -4,13 +4,11 @@ const cors = require("cors");
 const app = express();
 const PORT = 3000;
 
-// Simulando um banco de dados em memória
 let tasks = [];
 
 app.use(cors());
 app.use(express.json());
 
-// Definição de uma rota POST para criar uma nova tarefa
 app.post("/tasks", (req, res) => {
   const { taskName, taskDesc } = req.body;
   const newTask = {
@@ -23,7 +21,6 @@ app.post("/tasks", (req, res) => {
   res.json({ message: "Task added successfully", task: newTask });
 });
 
-// Definição de uma rota GET para listar todas as tarefas
 app.get("/tasks", (req, res) => {
   res.json(tasks);
 });
@@ -35,23 +32,22 @@ app.put("/tasks/:taskId", (req, res) => {
   let found = false;
   const updatedTasks = tasks.map((task) => {
     if (task.taskId === taskId) {
-      found = true; // Marca que a tarefa foi encontrada e será atualizada
-      return { ...task, taskName, taskDesc }; // Retorna a tarefa atualizada
+      found = true;
+      return { ...task, taskName, taskDesc };
     }
-    return task; // Retorna a tarefa não modificada
+    return task;
   });
 
   if (!found) {
-    return res.status(404).json({ message: "Task not found" }); // Tarefa não encontrada
+    return res.status(404).json({ message: "Task not found" });
   }
 
-  tasks = updatedTasks; // Atualiza a lista de tarefas
+  tasks = updatedTasks;
   console.log(`Task Updated: ${taskId}`);
-  const updatedTask = tasks.find((task) => task.taskId === taskId); // Encontra a tarefa atualizada para retornar
-  res.json({ message: "Task updated successfully", task: updatedTask }); // Retorna a tarefa atualizada
+  const updatedTask = tasks.find((task) => task.taskId === taskId);
+  res.json({ message: "Task updated successfully", task: updatedTask });
 });
 
-// Definição de uma rota DELETE para deletar uma tarefa específica
 app.delete("/tasks/:taskId", (req, res) => {
   const { taskId } = req.params;
   const originalLength = tasks.length;
@@ -59,7 +55,6 @@ app.delete("/tasks/:taskId", (req, res) => {
   const newLength = tasks.length;
 
   if (originalLength === newLength) {
-    // Nenhuma tarefa foi removida, ou seja, taskId não foi encontrado
     return res.status(404).json({ message: "Task not found" });
   }
 
@@ -67,7 +62,6 @@ app.delete("/tasks/:taskId", (req, res) => {
   res.json({ message: "Task deleted successfully", taskId });
 });
 
-// Iniciando o servidor na porta definida
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
