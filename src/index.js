@@ -1,3 +1,6 @@
+const { PrismaClient } = require("@prisma/client");
+const prisma = new PrismaClient();
+
 const express = require("express");
 const cors = require("cors");
 
@@ -9,55 +12,39 @@ let tasks = [];
 app.use(cors());
 app.use(express.json());
 
-app.post("/tasks", (req, res) => {
+app.post("/tasks", async (req, res) => {
   const { taskName, taskDesc } = req.body;
-  const newTask = {
-    taskId: Date.now().toString(),
-    taskName,
-    taskDesc,
-  };
-  tasks.push(newTask);
-  console.log(`Task Added: ${taskName}`);
+  const newTask = await prisma.task.create({
+    data: {
+      taskName,
+      taskDesc,
+    },
+  });
+  console.log(`Task Added: ${newTask.taskName}`);
   res.json({ message: "Task added successfully", task: newTask });
 });
 
-app.get("/tasks", (req, res) => {
+app.get("/tasks", async (req, res) => {
+  const tasks = await prisma.task.findMany();
   res.json(tasks);
 });
 
-app.put("/tasks/:taskId", (req, res) => {
+app.put("/tasks/:taskId", async (req, res) => {
   const { taskId } = req.params;
   const { taskName, taskDesc } = req.body;
-
-  let found = false;
-  const updatedTasks = tasks.map((task) => {
-    if (task.taskId === taskId) {
-      found = true;
-      return { ...task, taskName, taskDesc };
-    }
-    return task;
+  const updatedTask = await prisma.task.update({
+    where: { taskId },
+    data: { taskName, taskDesc },
   });
-
-  if (!found) {
-    return res.status(404).json({ message: "Task not found" });
-  }
-
-  tasks = updatedTasks;
   console.log(`Task Updated: ${taskId}`);
-  const updatedTask = tasks.find((task) => task.taskId === taskId);
   res.json({ message: "Task updated successfully", task: updatedTask });
 });
 
-app.delete("/tasks/:taskId", (req, res) => {
+app.delete("/tasks/:taskId", async (req, res) => {
   const { taskId } = req.params;
-  const originalLength = tasks.length;
-  tasks = tasks.filter((task) => task.taskId !== taskId);
-  const newLength = tasks.length;
-
-  if (originalLength === newLength) {
-    return res.status(404).json({ message: "Task not found" });
-  }
-
+  await prisma.task.delete({
+    where: { taskId },
+  });
   console.log(`Task Deleted: ${taskId}`);
   res.json({ message: "Task deleted successfully", taskId });
 });
