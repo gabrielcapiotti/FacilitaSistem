@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
@@ -5,7 +7,7 @@ const express = require("express");
 const cors = require("cors");
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
@@ -49,11 +51,10 @@ app.put("/tasks/:taskId", async (req, res) => {
     res.json({ message: "Task updated successfully", task: updatedTask });
   } catch (error) {
     console.error("Error updating task:", error);
-    if (error.code === "P2025") {
-      res.status(404).json({ message: "Task not found" });
-    } else {
-      res.status(500).json({ message: "Error updating task" });
-    }
+    res.status(error.code === "P2025" ? 404 : 500).json({
+      message:
+        error.code === "P2025" ? "Task not found" : "Error updating task",
+    });
   }
 });
 
@@ -67,11 +68,10 @@ app.delete("/tasks/:taskId", async (req, res) => {
     res.json({ message: "Task deleted successfully", taskId });
   } catch (error) {
     console.error("Error deleting task:", error);
-    if (error.code === "P2025") {
-      res.status(404).json({ message: "Task not found" });
-    } else {
-      res.status(500).json({ message: "Error deleting task" });
-    }
+    res.status(error.code === "P2025" ? 404 : 500).json({
+      message:
+        error.code === "P2025" ? "Task not found" : "Error deleting task",
+    });
   }
 });
 
